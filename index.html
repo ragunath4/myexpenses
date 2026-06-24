@@ -1263,6 +1263,23 @@ function toast(msg, type='ok') {
   setTimeout(() => el.remove(), 3000);
 }
 
+// ── TEMPORARY RESTORE — removes itself after running once ──
+(function restoreFromBackup() {
+  const flag = 'pf_restored_20260625';
+  if (localStorage.getItem(flag)) return;
+  const backupDoc = _db.collection('personal-finance').doc('backup_20260625');
+  backupDoc.get().then(snap => {
+    if (!snap.exists) { console.warn('Backup not found'); return; }
+    const data = snap.data();
+    if (!data.transactions) { console.warn('Backup empty'); return; }
+    _DOC.set({ transactions: data.transactions }, { merge: true }).then(() => {
+      localStorage.setItem(flag, '1');
+      alert('✓ Data restored from backup! The page will now reload.');
+      location.reload();
+    });
+  }).catch(e => console.error('Restore failed', e));
+})();
+
 // ── Firestore sync ──
 function save() {
   setSyncStatus('syncing');
