@@ -44,70 +44,136 @@ body {
   font-size: 15px;
   line-height: 1.6;
   min-height: 100vh;
+  display: flex;
 }
 
-/* ── Header ── */
-.header {
+/* ── Sidebar ── */
+.sidebar {
+  width: 220px;
+  min-height: 100vh;
   background: var(--text);
-  padding: 0 24px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-.header-inner {
-  max-width: 980px;
-  margin: 0 auto;
   display: flex;
-  align-items: center;
-  gap: 20px;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 200;
+  transition: transform 0.25s ease;
 }
-.logo {
+.sidebar-logo {
   font-family: var(--font-display);
-  font-size: 19px;
+  font-size: 20px;
   font-weight: 700;
   color: #F7F3EC;
-  white-space: nowrap;
-  padding: 16px 0;
+  padding: 28px 24px 20px;
   letter-spacing: -0.3px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
 }
-.logo em { color: var(--accent); font-style: normal; }
-.nav {
-  display: flex;
+.sidebar-logo em { color: var(--accent); font-style: normal; }
+.sidebar-nav {
   flex: 1;
-  overflow-x: auto;
-  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0;
+  gap: 2px;
 }
-.nav::-webkit-scrollbar { display: none; }
 .nav-btn {
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-left: 3px solid transparent;
   color: #8A8680;
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 18px 14px 16px;
+  padding: 13px 20px;
   cursor: pointer;
-  white-space: nowrap;
-  transition: color 0.15s, border-color 0.15s;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  border-radius: 0;
+  width: 100%;
 }
-.nav-btn:hover { color: #F7F3EC; }
-.nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.nav-btn .nav-icon { font-size: 17px; width: 22px; text-align: center; flex-shrink: 0; }
+.nav-btn:hover { background: rgba(255,255,255,0.05); color: #F7F3EC; }
+.nav-btn.active {
+  background: rgba(201,132,26,0.12);
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: #6B6860;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
 .sync-dot {
   width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--success);
   flex-shrink: 0;
-  margin-left: auto;
   transition: background 0.3s;
+}
+
+/* ── Hamburger (mobile) ── */
+.hamburger {
+  display: none;
+  position: fixed;
+  top: 14px; left: 14px;
+  z-index: 300;
+  background: var(--text);
+  border: none;
+  border-radius: 8px;
+  width: 40px; height: 40px;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0;
+}
+.hamburger span {
+  display: block;
+  width: 20px; height: 2px;
+  background: #F7F3EC;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 150;
+}
+
+/* ── Main content ── */
+.main-content {
+  margin-left: 220px;
+  flex: 1;
+  min-width: 0;
 }
 
 /* ── Layout ── */
 .page { display: none; }
 .page.active { display: block; }
-.container { max-width: 980px; margin: 0 auto; padding: 32px 24px; }
+.container { max-width: 860px; margin: 0 auto; padding: 32px 24px; }
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.open { display: block; }
+  .hamburger { display: flex; }
+  .main-content { margin-left: 0; }
+  .container { padding: 20px 16px; padding-top: 64px; }
+}
 
 /* ── Section title ── */
 .section-title {
@@ -660,7 +726,6 @@ canvas { display: block; }
   .form-grid { grid-template-columns: 1fr; }
   .analytics-grid { grid-template-columns: 1fr; }
   .balance-amount { font-size: 34px; }
-  .container { padding: 20px 16px; }
 }
 
 /* ── Utility ── */
@@ -689,20 +754,40 @@ canvas { display: block; }
 </head>
 <body>
 
-<!-- Header -->
-<header class="header">
-  <div class="header-inner">
-    <div class="logo">My <em>Ledger</em></div>
-    <nav class="nav">
-      <button class="nav-btn active" data-page="dashboard">Dashboard</button>
-      <button class="nav-btn" data-page="add">+ Add Entry</button>
-      <button class="nav-btn" data-page="transactions">Transactions</button>
-      <button class="nav-btn" data-page="analytics">Analytics</button>
-      <button class="nav-btn" data-page="settings">Settings</button>
-    </nav>
+<!-- Hamburger (mobile) -->
+<button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+  <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">My <em>Ledger</em></div>
+  <nav class="sidebar-nav">
+    <button class="nav-btn active" data-page="dashboard">
+      <span class="nav-icon">📊</span> Dashboard
+    </button>
+    <button class="nav-btn" data-page="add">
+      <span class="nav-icon">➕</span> Add Entry
+    </button>
+    <button class="nav-btn" data-page="transactions">
+      <span class="nav-icon">📋</span> Transactions
+    </button>
+    <button class="nav-btn" data-page="analytics">
+      <span class="nav-icon">📈</span> Analytics
+    </button>
+    <button class="nav-btn" data-page="settings">
+      <span class="nav-icon">⚙️</span> Settings
+    </button>
+  </nav>
+  <div class="sidebar-footer">
     <div class="sync-dot" id="sync-dot" title="Synced"></div>
+    <span id="sync-label">Synced</span>
   </div>
-</header>
+</aside>
+
+<!-- Main content -->
+<div class="main-content">
 
 <!-- ════ DASHBOARD ════ -->
 <div class="page active" id="page-dashboard">
@@ -976,6 +1061,8 @@ canvas { display: block; }
   </div>
 </div>
 
+</div><!-- /main-content -->
+
 <!-- ════ MODALS ════ -->
 <!-- Edit transaction -->
 <div class="modal-overlay" id="edit-modal">
@@ -1152,11 +1239,18 @@ function monthLabel(ym) {
   return new Date(+y, +m-1, 1).toLocaleDateString('en-IN', { month:'long', year:'numeric' });
 }
 
-function setSyncStatus(state) {
-  const el = document.getElementById('sync-dot');
-  if (!el) return;
-  const map = { syncing:'#E8A020', ok:'#2D7A4F', error:'#B33030' };
-  el.style.background = map[state] || map.ok;
+function setSyncStatus(s) {
+  const dot   = document.getElementById('sync-dot');
+  const label = document.getElementById('sync-label');
+  const map   = { syncing:'#E8A020', ok:'#2D7A4F', error:'#B33030' };
+  const txt   = { syncing:'Syncing…', ok:'Synced', error:'Sync error' };
+  if (dot)   dot.style.background = map[s] || map.ok;
+  if (label) label.textContent    = txt[s]  || txt.ok;
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
 }
 
 function toast(msg, type='ok') {
@@ -1207,6 +1301,9 @@ function nav(page) {
   document.querySelectorAll('.nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.page === page);
   });
+  // Close sidebar on mobile after navigation
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
   if (page === 'transactions') renderTransactions();
   if (page === 'analytics') renderAnalytics();
   if (page === 'settings') renderSettings();
