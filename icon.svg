@@ -1,30 +1,39 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Background -->
-  <rect width="512" height="512" rx="108" fill="#1A1917"/>
+  <!-- Green circle background -->
+  <circle cx="256" cy="256" r="256" fill="#4CAF50"/>
+
+  <!-- Shadow overlay (long shadow effect) -->
+  <path d="M512 256 L256 512 L512 512 Z" fill="#388E3C" opacity="0.5"/>
+  <path d="M290 512 L512 290 L512 512 Z" fill="#388E3C" opacity="0.3"/>
+
+  <!-- Money/cards sticking out of wallet top -->
+  <!-- Card 1 (left, tilted left) -->
+  <rect x="148" y="108" width="72" height="100" rx="8" fill="white" opacity="0.95" transform="rotate(-18 184 158)"/>
+  <!-- Card 2 (middle) -->
+  <rect x="210" y="92" width="72" height="108" rx="8" fill="white" opacity="0.9" transform="rotate(-5 246 146)"/>
+  <!-- Coin/gear (right) -->
+  <circle cx="340" cy="148" r="44" fill="white" opacity="0.95"/>
+  <circle cx="340" cy="148" r="30" fill="#4CAF50" opacity="0.7"/>
+  <!-- Gear teeth suggestion -->
+  <circle cx="340" cy="118" r="7" fill="white"/>
+  <circle cx="340" cy="178" r="7" fill="white"/>
+  <circle cx="310" cy="148" r="7" fill="white"/>
+  <circle cx="370" cy="148" r="7" fill="white"/>
+  <circle cx="319" cy="127" r="6" fill="white"/>
+  <circle cx="361" cy="127" r="6" fill="white"/>
+  <circle cx="319" cy="169" r="6" fill="white"/>
+  <circle cx="361" cy="169" r="6" fill="white"/>
+  <circle cx="340" cy="148" r="14" fill="white"/>
 
   <!-- Wallet body -->
-  <rect x="72" y="152" width="368" height="240" rx="28" fill="#D4A017"/>
+  <rect x="110" y="210" width="292" height="200" rx="22" fill="white"/>
 
-  <!-- Wallet flap -->
-  <rect x="72" y="152" width="368" height="90" rx="28" fill="#B8880F"/>
-  <rect x="72" y="200" width="368" height="42" fill="#B8880F"/>
+  <!-- Wallet clasp/flap on right -->
+  <rect x="332" y="248" width="90" height="124" rx="18" fill="#388E3C"/>
+  <circle cx="377" cy="310" r="22" fill="#4CAF50"/>
+  <circle cx="377" cy="310" r="10" fill="#388E3C"/>
 
-  <!-- Pocket -->
-  <rect x="280" y="218" width="132" height="110" rx="20" fill="#1A1917"/>
-  <circle cx="346" cy="273" r="32" fill="#D4A017"/>
-  <circle cx="346" cy="273" r="18" fill="#1A1917"/>
-  <circle cx="346" cy="273" r="8" fill="#D4A017"/>
-
-  <!-- Card lines in wallet -->
-  <rect x="100" y="310" width="140" height="16" rx="5" fill="#F5F0E8" opacity="0.35"/>
-  <rect x="100" y="336" width="100" height="12" rx="4" fill="#F5F0E8" opacity="0.2"/>
-
-  <!-- Coins peeking top -->
-  <circle cx="168" cy="148" r="36" fill="#E8B820"/>
-  <circle cx="168" cy="148" r="24" fill="#D4A017"/>
-  <text x="168" y="156" font-family="Georgia,serif" font-size="22" font-weight="700" fill="#1A1917" text-anchor="middle">₹</text>
-
-  <circle cx="246" cy="136" r="30" fill="#E8B820"/>
-  <circle cx="246" cy="136" r="20" fill="#D4A017"/>
-  <text x="246" y="143" font-family="Georgia,serif" font-size="18" font-weight="700" fill="#1A1917" text-anchor="middle">₹</text>
+  <!-- Trend arrow inside wallet -->
+  <polyline points="138,350 180,320 222,340 278,285" fill="none" stroke="#4CAF50" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="278,285 310,278 300,308" fill="#4CAF50"/>
 </svg>
