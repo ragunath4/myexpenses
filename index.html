@@ -1328,9 +1328,9 @@ function nav(page) {
   document.querySelectorAll('.nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.page === page);
   });
-  // Close sidebar on mobile after navigation
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebar-overlay').classList.remove('open');
+  // Close sidebar on mobile after navigation (desktop only — mobile uses bottom nav)
+  document.getElementById('sidebar')?.classList.remove('open');
+  document.getElementById('sidebar-overlay')?.classList.remove('open');
   if (page === 'transactions') renderTransactions();
   if (page === 'analytics') renderAnalytics();
   if (page === 'settings') renderSettings();
