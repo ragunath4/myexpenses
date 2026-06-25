@@ -129,36 +129,53 @@ body {
   transition: background 0.3s;
 }
 
-/* ── Hamburger (mobile) ── */
-.hamburger {
-  display: none;
-  position: fixed;
-  top: 14px; left: 14px;
-  z-index: 300;
-  background: var(--text);
-  border: none;
-  border-radius: 8px;
-  width: 40px; height: 40px;
-  cursor: pointer;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 0;
-}
-.hamburger span {
-  display: block;
-  width: 20px; height: 2px;
-  background: #F7F3EC;
-  border-radius: 2px;
-  transition: all 0.2s;
-}
+/* ── Hamburger (mobile) — hidden, replaced by bottom nav ── */
+.hamburger { display: none !important; }
 .sidebar-overlay {
   display: none;
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.4);
   z-index: 150;
 }
+
+/* ── Bottom nav bar (mobile only) ── */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 300;
+  background: var(--text);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-nav-inner {
+  display: flex;
+  align-items: stretch;
+  height: 60px;
+}
+.bottom-nav-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: #6B6860;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: color 0.15s;
+  padding: 0 4px;
+}
+.bottom-nav-btn .bn-icon { font-size: 20px; line-height: 1; }
+.bottom-nav-btn.active { color: var(--accent); }
+.bottom-nav-btn:active { opacity: 0.7; }
 
 /* ── Main content ── */
 .main-content {
@@ -174,12 +191,10 @@ body {
 
 /* ── Mobile ── */
 @media (max-width: 768px) {
-  .sidebar { transform: translateX(-100%); }
-  .sidebar.open { transform: translateX(0); }
-  .sidebar-overlay.open { display: block; }
-  .hamburger { display: flex; }
+  .sidebar { display: none; }
   .main-content { margin-left: 0; }
-  .container { padding: 20px 16px; padding-top: 64px; }
+  .container { padding: 20px 16px 80px; }
+  .bottom-nav { display: block; }
 }
 
 /* ── Section title ── */
@@ -761,11 +776,16 @@ canvas { display: block; }
 </head>
 <body>
 
-<!-- Hamburger (mobile) -->
-<button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menu">
-  <span></span><span></span><span></span>
-</button>
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<!-- Bottom nav (mobile) -->
+<nav class="bottom-nav" id="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bottom-nav-btn active" data-page="dashboard"><span class="bn-icon">📊</span>Dashboard</button>
+    <button class="bottom-nav-btn" data-page="add"><span class="bn-icon">➕</span>Add</button>
+    <button class="bottom-nav-btn" data-page="transactions"><span class="bn-icon">📋</span>History</button>
+    <button class="bottom-nav-btn" data-page="analytics"><span class="bn-icon">📈</span>Analytics</button>
+    <button class="bottom-nav-btn" data-page="settings"><span class="bn-icon">⚙️</span>Settings</button>
+  </div>
+</nav>
 
 <!-- Sidebar -->
 <aside class="sidebar" id="sidebar">
@@ -1317,6 +1337,11 @@ function nav(page) {
   if (page === 'add') { populateFormSelects(); }
 }
 document.querySelectorAll('.nav-btn').forEach(b => b.addEventListener('click', () => nav(b.dataset.page)));
+document.querySelectorAll('.bottom-nav-btn').forEach(b => b.addEventListener('click', () => {
+  nav(b.dataset.page);
+  document.querySelectorAll('.bottom-nav-btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+}));
 
 // ── Month dropdown population ──
 function getMonths() {
