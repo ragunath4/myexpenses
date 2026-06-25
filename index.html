@@ -12,6 +12,7 @@
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.441.0/dist/umd/lucide.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -852,6 +853,24 @@ canvas { display: block; }
 }
 .badge-income { background: var(--success-bg); color: var(--success); }
 .badge-expense { background: var(--danger-bg); color: var(--danger); }
+
+/* ── Lucide icon defaults ── */
+.nav-icon svg { width:18px; height:18px; stroke-width:2; }
+.summary-icon svg { width:22px; height:22px; stroke-width:2; }
+.type-card-icon svg { width:28px; height:28px; stroke-width:1.8; }
+.tx-icon svg { width:18px; height:18px; stroke-width:2; }
+.empty-icon svg { width:44px; height:44px; stroke-width:1.4; opacity:0.45; }
+.add-plus-circle svg { width:36px; height:36px; stroke-width:2.5; color:#fff; }
+button svg, label svg { width:14px; height:14px; stroke-width:2; vertical-align:middle; }
+.btn-icon svg { width:13px; height:13px; }
+.search-icon svg { width:16px; height:16px; stroke-width:2; color:var(--text2); }
+.cat-chevron svg { width:12px; height:12px; stroke-width:2.5; transition:transform .2s; }
+.cat-header.open .cat-chevron svg { transform:rotate(90deg); }
+.subcat-toggle-arrow svg { width:10px; height:10px; stroke-width:2.5; transition:transform 0.2s; color:var(--text2); }
+.subcat-open .subcat-toggle-arrow svg { transform:rotate(90deg); }
+.toast-icon svg { width:14px; height:14px; stroke-width:2.5; }
+.type-toggle-btn svg { width:14px; height:14px; stroke-width:2; vertical-align:-2px; margin-right:3px; }
+.settings-it-icon svg { width:16px; height:16px; stroke-width:2; color:var(--accent); }
 </style>
 </head>
 <body>
@@ -887,19 +906,19 @@ canvas { display: block; }
   <div class="sidebar-logo">My <em>Ledger</em></div>
   <nav class="sidebar-nav">
     <button class="nav-btn active" data-page="dashboard">
-      <span class="nav-icon">📊</span> Dashboard
+      <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span> Dashboard
     </button>
     <button class="nav-btn" data-page="add">
-      <span class="nav-icon">➕</span> Add Entry
+      <span class="nav-icon"><i data-lucide="plus-circle"></i></span> Add Entry
     </button>
     <button class="nav-btn" data-page="transactions">
-      <span class="nav-icon">📋</span> Transactions
+      <span class="nav-icon"><i data-lucide="scroll-text"></i></span> Transactions
     </button>
     <button class="nav-btn" data-page="analytics">
-      <span class="nav-icon">📈</span> Analytics
+      <span class="nav-icon"><i data-lucide="bar-chart-3"></i></span> Analytics
     </button>
     <button class="nav-btn" data-page="settings">
-      <span class="nav-icon">⚙️</span> Settings
+      <span class="nav-icon"><i data-lucide="sliders-horizontal"></i></span> Settings
     </button>
   </nav>
   <div class="sidebar-footer">
@@ -930,12 +949,12 @@ canvas { display: block; }
     <!-- Summary cards -->
     <div class="summary-grid">
       <div class="summary-card">
-        <div class="summary-icon income">💰</div>
+        <div class="summary-icon income"><i data-lucide="trending-up"></i></div>
         <div class="summary-lbl">Included</div>
         <div class="summary-val income" id="dash-income">₹0</div>
       </div>
       <div class="summary-card">
-        <div class="summary-icon expense">💸</div>
+        <div class="summary-icon expense"><i data-lucide="trending-down"></i></div>
         <div class="summary-lbl">Expenses</div>
         <div class="summary-val expense" id="dash-expense">₹0</div>
       </div>
@@ -944,12 +963,12 @@ canvas { display: block; }
     <!-- Debt summary -->
     <div class="summary-grid" id="debt-summary-row" style="display:none;">
       <div class="summary-card">
-        <div class="summary-icon debt">🤝</div>
+        <div class="summary-icon debt"><i data-lucide="arrow-up-right"></i></div>
         <div class="summary-lbl">You Lent (Pending)</div>
         <div class="summary-val debt" id="dash-lent">₹0</div>
       </div>
       <div class="summary-card">
-        <div class="summary-icon expense">💳</div>
+        <div class="summary-icon expense"><i data-lucide="arrow-down-left"></i></div>
         <div class="summary-lbl">You Borrowed (Pending)</div>
         <div class="summary-val expense" id="dash-borrowed">₹0</div>
       </div>
@@ -965,7 +984,7 @@ canvas { display: block; }
         <button class="btn btn-ghost text-sm" onclick="nav('transactions')">View All →</button>
       </div>
       <div class="tx-list" id="dash-tx-list">
-        <div class="empty-state"><div class="empty-icon">📋</div><p>No transactions yet</p></div>
+        <div class="empty-state"><div class="empty-icon"><i data-lucide="receipt"></i></div><p>No transactions yet</p></div>
       </div>
     </div>
   </div>
@@ -978,7 +997,7 @@ canvas { display: block; }
     <!-- Hero plus button -->
     <div class="add-hero">
       <div class="add-plus-ring">
-        <div class="add-plus-circle">+</div>
+        <div class="add-plus-circle"><i data-lucide="plus"></i></div>
       </div>
       <div class="add-hero-title">New Entry</div>
       <div class="add-hero-sub">What would you like to record?</div>
@@ -987,15 +1006,15 @@ canvas { display: block; }
     <!-- Type cards: Expense · Income · Debt -->
     <div class="type-cards">
       <button class="type-card active expense" data-type="expense" onclick="setEntryType('expense')">
-        <div class="type-card-icon" style="background:var(--danger-bg);">💸</div>
+        <div class="type-card-icon" style="background:var(--danger-bg);color:var(--danger);"><i data-lucide="receipt"></i></div>
         <div class="type-card-label">Expense</div>
       </button>
       <button class="type-card income" data-type="income" onclick="setEntryType('income')">
-        <div class="type-card-icon" style="background:var(--success-bg);">💰</div>
+        <div class="type-card-icon" style="background:var(--success-bg);color:var(--success);"><i data-lucide="wallet"></i></div>
         <div class="type-card-label">Income</div>
       </button>
       <button class="type-card debt" data-type="debt" onclick="setEntryType('debt')">
-        <div class="type-card-icon" style="background:var(--debt-bg);">🤝</div>
+        <div class="type-card-icon" style="background:var(--debt-bg);color:var(--debt);"><i data-lucide="handshake"></i></div>
         <div class="type-card-label">Debt</div>
       </button>
     </div>
@@ -1084,7 +1103,7 @@ canvas { display: block; }
 
     <div class="filters-row">
       <div class="search-wrap">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon"><i data-lucide="search"></i></span>
         <input class="form-input search-input" id="tx-search" type="text" placeholder="Search by purpose, category…" oninput="renderTransactions()">
       </div>
       <select class="month-select" id="tx-month" onchange="renderTransactions()"></select>
@@ -1174,7 +1193,7 @@ canvas { display: block; }
           <div style="font-weight:700;font-size:14px;margin-bottom:4px;">Export to Excel</div>
           <div class="text-xs text-muted">Download all transactions, categories, and income types as an .xlsx file.</div>
         </div>
-        <button class="btn btn-primary" onclick="exportExcel()">⬇ Download Excel</button>
+        <button class="btn btn-primary" onclick="exportExcel()"><i data-lucide="download"></i> Download Excel</button>
       </div>
       <div class="card card-sm" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
         <div style="flex:1;min-width:200px;">
@@ -1182,7 +1201,7 @@ canvas { display: block; }
           <div class="text-xs text-muted">Restore a previously exported backup. <strong>Replaces all current data.</strong></div>
         </div>
         <label class="btn btn-ghost" style="cursor:pointer;">
-          ⬆ Choose File
+          <i data-lucide="upload"></i> Choose File
           <input type="file" accept=".xlsx,.xls" id="import-file-input" style="display:none;" onchange="onImportFile(event)">
         </label>
       </div>
@@ -1208,9 +1227,9 @@ canvas { display: block; }
   <div class="modal">
     <div class="modal-title">Edit Transaction</div>
     <div class="type-toggle" id="edit-type-toggle" style="grid-template-columns:1fr 1fr 1fr;">
-      <button class="type-toggle-btn active income" data-type="income" onclick="setEditType('income')">💰 Income</button>
-      <button class="type-toggle-btn expense" data-type="expense" onclick="setEditType('expense')">💸 Expense</button>
-      <button class="type-toggle-btn debt" data-type="debt" onclick="setEditType('debt')">🤝 Debt</button>
+      <button class="type-toggle-btn active income" data-type="income" onclick="setEditType('income')"><i data-lucide="wallet"></i> Income</button>
+      <button class="type-toggle-btn expense" data-type="expense" onclick="setEditType('expense')"><i data-lucide="receipt"></i> Expense</button>
+      <button class="type-toggle-btn debt" data-type="debt" onclick="setEditType('debt')"><i data-lucide="handshake"></i> Debt</button>
     </div>
     <div class="form-grid">
       <div class="form-group full">
@@ -1272,7 +1291,7 @@ canvas { display: block; }
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-danger" onclick="deleteEntry()">🗑 Delete</button>
+      <button class="btn btn-danger" onclick="deleteEntry()"><i data-lucide="trash-2"></i> Delete</button>
       <button class="btn btn-ghost" onclick="closeModal('edit-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="updateEntry()">Save Changes</button>
     </div>
@@ -1396,9 +1415,10 @@ function toast(msg, type='ok') {
   const wrap = document.getElementById('toast-wrap');
   const el = document.createElement('div');
   el.className = 'toast';
-  const icon = type==='ok' ? '✓' : type==='error' ? '✕' : 'ℹ';
-  el.innerHTML = `<span>${icon}</span> ${msg}`;
+  const iconName = type==='ok' ? 'check' : type==='error' ? 'x' : 'info';
+  el.innerHTML = `<span class="toast-icon"><i data-lucide="${iconName}"></i></span> ${msg}`;
   wrap.appendChild(el);
+  applyIcons();
   setTimeout(() => el.remove(), 3000);
 }
 
@@ -1475,6 +1495,10 @@ function populateMonthSelects() {
 }
 
 // ── Refresh all views ──
+function applyIcons(el) {
+  if (window.lucide) lucide.createIcons(el ? {els: [el]} : undefined);
+}
+
 function refreshAll() {
   populateMonthSelects();
   populateFormSelects();
@@ -1527,13 +1551,14 @@ function renderDashboard() {
   const recent = [...txs].sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.createdAt||0) - (a.createdAt||0)).slice(0,8);
   const list = document.getElementById('dash-tx-list');
   if (!recent.length) {
-    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>No transactions for ${monthLabel(month)}</p></div>`;
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon"><i data-lucide="receipt"></i></div><p>No transactions for ${monthLabel(month)}</p></div>`;
     return;
   }
   list.innerHTML = recent.map(t => txHtml(t)).join('');
   list.querySelectorAll('.tx-item').forEach(el => {
     el.addEventListener('click', () => openEditModal(el.dataset.id));
   });
+  applyIcons();
 }
 document.getElementById('dash-month').addEventListener('change', renderDashboard);
 
@@ -1553,7 +1578,7 @@ function txHtml(t) {
       : '';
     return `
       <div class="tx-item" data-id="${t.id}">
-        <div class="tx-icon debt">${isLent ? '🤝' : '💳'}</div>
+        <div class="tx-icon debt"><i data-lucide="${isLent ? 'arrow-up-right' : 'arrow-down-left'}"></i></div>
         <div class="tx-info">
           <div class="tx-title">${esc(dirLabel)} <span class="debt-badge ${badge}">${badgeTxt}</span></div>
           <div class="tx-sub">${esc(t.purpose || '')}${esc(due)}${repaidLine}</div>
@@ -1565,7 +1590,7 @@ function txHtml(t) {
       </div>`;
   }
   const isIncome = t.type === 'income';
-  const icon  = isIncome ? '💰' : categoryIcon(t.category);
+  const icon  = isIncome ? '<i data-lucide="wallet"></i>' : categoryIcon(t.category);
   const title = isIncome ? (t.incomeType || 'Income') : (t.subcategory || t.category || 'Expense');
   const sub   = t.purpose || (isIncome ? '' : (t.category || ''));
   return `
@@ -1583,8 +1608,9 @@ function txHtml(t) {
 }
 
 function categoryIcon(cat) {
-  const map = {food:'🍽️', gym:'💪', rent:'🏠', transport:'🚗', health:'💊', entertainment:'🎬', other:'📁'};
-  return map[(cat||'').toLowerCase()] || '📁';
+  const map = {food:'utensils', gym:'dumbbell', rent:'home', transport:'car', health:'heart-pulse', entertainment:'film', other:'tag'};
+  const name = map[(cat||'').toLowerCase()] || 'tag';
+  return `<i data-lucide="${name}"></i>`;
 }
 
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -1607,13 +1633,14 @@ function renderTransactions() {
 
   const list = document.getElementById('tx-list');
   if (!txs.length) {
-    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><p>No transactions found</p></div>`;
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon"><i data-lucide="search-x"></i></div><p>No transactions found</p></div>`;
     return;
   }
   list.innerHTML = txs.map(t => txHtml(t)).join('');
   list.querySelectorAll('.tx-item').forEach(el => {
     el.addEventListener('click', () => openEditModal(el.dataset.id));
   });
+  applyIcons();
 }
 
 // ── Analytics ──
@@ -1702,7 +1729,7 @@ function renderAnalytics() {
               <span style="display:flex;align-items:center;gap:8px;">
                 <span style="width:10px;height:10px;border-radius:3px;background:${color};display:inline-block;flex-shrink:0;"></span>
                 <strong>${esc(cat)}</strong>
-                ${hasSubs ? `<span class="subcat-toggle-arrow" style="font-size:10px;color:var(--text2);transition:transform 0.2s;">▶</span>` : ''}
+                ${hasSubs ? `<span class="subcat-toggle-arrow"><i data-lucide="chevron-right"></i></span>` : ''}
               </span>
               <span>${fmt(data.total)} <span style="color:var(--text2);font-size:11px;">${totalExp ? Math.round(data.total/totalExp*100) : 0}%</span></span>
             </div>
@@ -1756,6 +1783,7 @@ function renderAnalytics() {
 
   if (!expenses.length) {
     weeklyWrap.innerHTML = '<div class="text-muted text-sm">No expense data for this month</div>';
+    applyIcons();
     return;
   }
 
@@ -1793,6 +1821,7 @@ function renderAnalytics() {
         ${detail ? `<div style="margin-top:6px;line-height:2;">${detail}</div>` : '<div style="margin-top:4px;font-size:12px;color:var(--text2);">No expenses</div>'}
       </div>`;
   }).join('');
+  applyIcons();
 }
 
 function drawDonut(canvasId, data, colors) {
@@ -1834,10 +1863,10 @@ function renderSettings() {
   itList.innerHTML = state.incomeTypes.map(it => `
     <div class="cat-item">
       <div class="cat-header" style="cursor:default;">
-        <span style="font-size:16px;">💰</span>
+        <span class="settings-it-icon"><i data-lucide="wallet"></i></span>
         <span class="cat-name">${esc(it.name)}</span>
         <div class="cat-actions">
-          <button class="btn btn-danger btn-icon" title="Delete" onclick="deleteIncomeType('${it.id}')">🗑</button>
+          <button class="btn btn-danger btn-icon" title="Delete" onclick="deleteIncomeType('${it.id}')"><i data-lucide="trash-2"></i></button>
         </div>
       </div>
     </div>`).join('') || '<div class="text-muted text-sm" style="padding:8px 0;">No income types yet</div>';
@@ -1847,17 +1876,17 @@ function renderSettings() {
   catList.innerHTML = state.categories.map(cat => `
     <div class="cat-item">
       <div class="cat-header" onclick="toggleCat(this)">
-        <span class="cat-chevron">▶</span>
+        <span class="cat-chevron"><i data-lucide="chevron-right"></i></span>
         <span class="cat-name">${esc(cat.name)}</span>
         <div class="cat-actions" onclick="event.stopPropagation()">
-          <button class="btn btn-danger btn-icon" title="Delete category" onclick="deleteCategory('${cat.id}')">🗑</button>
+          <button class="btn btn-danger btn-icon" title="Delete category" onclick="deleteCategory('${cat.id}')"><i data-lucide="trash-2"></i></button>
         </div>
       </div>
       <div class="sub-list" data-cat-id="${cat.id}">
         ${cat.subcategories.map(sub => `
           <div class="sub-item">
             <span>${esc(sub.name)}</span>
-            <button class="btn btn-danger btn-icon" style="width:26px;height:26px;font-size:12px;" onclick="deleteSubcategory('${cat.id}','${sub.id}')">✕</button>
+            <button class="btn btn-danger btn-icon" style="width:26px;height:26px;" onclick="deleteSubcategory('${cat.id}','${sub.id}')"><i data-lucide="x"></i></button>
           </div>`).join('')}
         <div class="add-sub-row">
           <input class="form-input" id="new-sub-${cat.id}" placeholder="Add subcategory…">
@@ -1865,6 +1894,7 @@ function renderSettings() {
         </div>
       </div>
     </div>`).join('') || '<div class="text-muted text-sm" style="padding:8px 0;">No categories yet</div>';
+  applyIcons();
 }
 
 function toggleCat(header) {
@@ -2008,7 +2038,7 @@ function saveEntry() {
 
   state.transactions.push(tx);
   save().then(() => {
-    const msgs = { income:'💰 Income recorded!', expense:'💸 Expense recorded!', debt:'🤝 Debt recorded!' };
+    const msgs = { income:'Income recorded!', expense:'Expense recorded!', debt:'Debt recorded!' };
     toast(msgs[currentEntryType]);
     resetForm();
     nav('dashboard');
@@ -2044,6 +2074,7 @@ function openEditModal(id) {
   }
 
   openModal('edit-modal');
+  applyIcons();
 }
 
 function setEditType(type) {
@@ -2284,9 +2315,7 @@ function onImportFile(e) {
       };
 
       document.getElementById('import-preview').innerHTML =
-        `📊 ${transactions.length} transactions<br>` +
-        `🗂 ${(categories.length||DEFAULT_CATEGORIES.length)} categories<br>` +
-        `💰 ${(incomeTypes.length||DEFAULT_INCOME_TYPES.length)} income types`;
+        `${transactions.length} transactions · ${(categories.length||DEFAULT_CATEGORIES.length)} categories · ${(incomeTypes.length||DEFAULT_INCOME_TYPES.length)} income types`;
 
       openModal('import-modal');
     } catch(err) {
@@ -2306,7 +2335,7 @@ document.getElementById('import-confirm-btn').addEventListener('click', () => {
   save().then(() => {
     closeModal('import-modal');
     refreshAll();
-    toast('✓ Data imported successfully!');
+    toast('Data imported successfully!');
   });
 });
 
@@ -2327,6 +2356,7 @@ document.getElementById('cat-settings-list').addEventListener('keydown', e => {
 // ── Init ──
 document.getElementById('f-date').value = today();
 load();
+if (window.lucide) lucide.createIcons();
 </script>
 </body>
 </html>
