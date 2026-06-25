@@ -245,38 +245,55 @@ body {
 .card-sm { padding: 18px 20px; }
 
 /* ── Dashboard ── */
-.balance-hero {
+.dash-hero {
   background: var(--text);
   border-radius: var(--radius);
-  padding: 32px;
+  padding: 16px 18px 16px;
   color: #F7F3EC;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   position: relative;
   overflow: hidden;
 }
-.balance-hero::before {
+.dash-hero::before {
   content: '';
   position: absolute;
-  top: -40px; right: -40px;
-  width: 200px; height: 200px;
+  top: -30px; right: -30px;
+  width: 150px; height: 150px;
   border-radius: 50%;
   background: rgba(201,132,26,0.08);
+  pointer-events: none;
 }
-.balance-label {
-  font-size: 11px;
+.dash-hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.dash-hero-label {
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #8A8680;
-  margin-bottom: 8px;
 }
+.month-select-sm {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #C8C3BB;
+  font-size: 12px;
+  font-family: var(--font-body);
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.month-select-sm option { background: #1C1A17; color: #F7F3EC; }
 .balance-amount {
   font-family: var(--font-display);
-  font-size: 44px;
+  font-size: 38px;
   font-weight: 700;
   letter-spacing: -1px;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .balance-amount.positive { color: #5EC98A; }
 .balance-amount.negative { color: #E07070; }
@@ -289,42 +306,62 @@ body {
 .summary-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 .summary-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
+  border-radius: 12px;
+  padding: 12px 14px;
   box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
 }
 .summary-icon {
-  width: 36px; height: 36px;
-  border-radius: 10px;
+  width: 34px; height: 34px;
+  border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
-  margin-bottom: 12px;
+  flex-shrink: 0;
 }
-.summary-icon.income { background: var(--success-bg); }
-.summary-icon.expense { background: var(--danger-bg); }
-.summary-icon.debt { background: var(--debt-bg); }
-.summary-val.debt { color: var(--debt); }
+.summary-icon.income { background: var(--success-bg); color: var(--success); }
+.summary-icon.expense { background: var(--danger-bg); color: var(--danger); }
+.summary-icon.debt { background: var(--debt-bg); color: var(--debt); }
+.summary-card-body { min-width: 0; }
 .summary-lbl {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text2);
-  margin-bottom: 4px;
+  margin-bottom: 1px;
 }
 .summary-val {
   font-family: var(--font-mono);
-  font-size: 22px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .summary-val.income { color: var(--success); }
 .summary-val.expense { color: var(--danger); }
+.summary-val.debt { color: var(--debt); }
+
+.recent-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 0 2px;
+}
+.recent-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+}
 
 /* ── Add Entry Hero ── */
 .add-hero {
@@ -848,10 +885,14 @@ canvas { display: block; }
 
 /* ── Responsive ── */
 @media (max-width: 600px) {
-  .summary-grid { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
   .form-grid { grid-template-columns: 1fr; }
   .analytics-grid { grid-template-columns: 1fr; }
-  .balance-amount { font-size: 34px; }
+  .balance-amount { font-size: 32px; }
+  .container { padding: 14px 14px 90px; }
+  .summary-val { font-size: 14px; }
+  .summary-icon { width: 30px; height: 30px; border-radius: 8px; }
+  .summary-icon svg { width: 16px; height: 16px; }
 }
 
 /* ── Utility ── */
@@ -958,60 +999,67 @@ button svg, label svg { width:14px; height:14px; stroke-width:2; vertical-align:
 <!-- ════ DASHBOARD ════ -->
 <div class="page active" id="page-dashboard">
   <div class="container">
-    <!-- Month selector -->
-    <div class="month-bar">
-      <label>Showing</label>
-      <select class="month-select" id="dash-month"></select>
-    </div>
 
-    <!-- Balance hero -->
-    <div class="balance-hero">
-      <div class="balance-label">Net Balance</div>
+    <!-- Compact hero with inline month -->
+    <div class="dash-hero">
+      <div class="dash-hero-top">
+        <span class="dash-hero-label">Net Balance</span>
+        <select class="month-select-sm" id="dash-month"></select>
+      </div>
       <div class="balance-amount zero" id="dash-balance">₹0</div>
       <div class="balance-month" id="dash-balance-sub">This month</div>
     </div>
 
-    <!-- Summary cards -->
+    <!-- Income + Expense -->
     <div class="summary-grid">
       <div class="summary-card">
         <div class="summary-icon income"><i data-lucide="trending-up"></i></div>
-        <div class="summary-lbl">Included</div>
-        <div class="summary-val income" id="dash-income">₹0</div>
+        <div class="summary-card-body">
+          <div class="summary-lbl">Income</div>
+          <div class="summary-val income" id="dash-income">₹0</div>
+        </div>
       </div>
       <div class="summary-card">
         <div class="summary-icon expense"><i data-lucide="trending-down"></i></div>
-        <div class="summary-lbl">Expenses</div>
-        <div class="summary-val expense" id="dash-expense">₹0</div>
+        <div class="summary-card-body">
+          <div class="summary-lbl">Spent</div>
+          <div class="summary-val expense" id="dash-expense">₹0</div>
+        </div>
       </div>
     </div>
 
-    <!-- Debt summary -->
+    <!-- Debt (shown only when pending debts exist) -->
     <div class="summary-grid" id="debt-summary-row" style="display:none;">
       <div class="summary-card">
         <div class="summary-icon debt"><i data-lucide="arrow-up-right"></i></div>
-        <div class="summary-lbl">You Lent (Pending)</div>
-        <div class="summary-val debt" id="dash-lent">₹0</div>
+        <div class="summary-card-body">
+          <div class="summary-lbl">You Lent</div>
+          <div class="summary-val debt" id="dash-lent">₹0</div>
+        </div>
       </div>
       <div class="summary-card">
         <div class="summary-icon expense"><i data-lucide="arrow-down-left"></i></div>
-        <div class="summary-lbl">You Borrowed (Pending)</div>
-        <div class="summary-val expense" id="dash-borrowed">₹0</div>
+        <div class="summary-card-body">
+          <div class="summary-lbl">Borrowed</div>
+          <div class="summary-val expense" id="dash-borrowed">₹0</div>
+        </div>
       </div>
     </div>
 
-    <!-- Recent -->
-    <div class="card">
-      <div class="flex items-center mb-4" style="justify-content:space-between;">
-        <div>
-          <div style="font-family:var(--font-display);font-size:17px;font-weight:700;">Recent Transactions</div>
-          <div class="text-xs text-muted" id="dash-tx-count">— entries this month</div>
-        </div>
-        <button class="btn btn-ghost text-sm" onclick="nav('transactions')">View All →</button>
+    <!-- Recent transactions -->
+    <div class="recent-header">
+      <div>
+        <div class="recent-title">Recent</div>
+        <div class="text-xs text-muted" id="dash-tx-count">— entries this month</div>
       </div>
+      <button class="btn btn-ghost text-sm" onclick="nav('transactions')">View All →</button>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;">
       <div class="tx-list" id="dash-tx-list">
         <div class="empty-state"><div class="empty-icon"><i data-lucide="receipt"></i></div><p>No transactions yet</p></div>
       </div>
     </div>
+
   </div>
 </div>
 
