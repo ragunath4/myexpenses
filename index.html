@@ -302,6 +302,86 @@ body {
 .summary-val.income { color: var(--success); }
 .summary-val.expense { color: var(--danger); }
 
+/* ── Add Entry Hero ── */
+.add-hero {
+  text-align: center;
+  padding: 36px 0 28px;
+}
+.add-plus-ring {
+  width: 108px; height: 108px;
+  border-radius: 50%;
+  background: rgba(201,132,26,0.07);
+  border: 2px dashed var(--accent-border);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  animation: pulse-ring 2.4s ease-in-out infinite;
+}
+@keyframes pulse-ring {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.75; }
+}
+.add-plus-circle {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 42px;
+  color: #fff;
+  font-weight: 200;
+  line-height: 1;
+  box-shadow: 0 6px 24px rgba(201,132,26,0.38);
+  user-select: none;
+}
+.add-hero-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.add-hero-sub { font-size: 13px; color: var(--text2); }
+
+/* ── Type Cards ── */
+.type-cards {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  max-width: 420px;
+  margin: 0 auto 28px;
+}
+.type-card {
+  flex: 1;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 18px 8px 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+  box-shadow: var(--shadow);
+}
+.type-card:hover { transform: translateY(-3px); border-color: var(--border-strong); }
+.type-card.active.expense { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(179,48,48,0.12); }
+.type-card.active.income  { border-color: var(--success); box-shadow: 0 0 0 3px rgba(45,122,79,0.12); }
+.type-card.active.debt    { border-color: var(--debt); box-shadow: 0 0 0 3px rgba(91,79,207,0.12); }
+.type-card-icon {
+  width: 52px; height: 52px;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+}
+.type-card-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text2);
+  transition: color 0.15s;
+}
+.type-card.active .type-card-label { color: var(--text); }
+
 /* ── Month filter ── */
 .month-bar {
   display: flex;
@@ -894,17 +974,34 @@ canvas { display: block; }
 <!-- ════ ADD ENTRY ════ -->
 <div class="page" id="page-add">
   <div class="container">
-    <div class="section-title" id="form-title">Add Entry</div>
-    <div class="section-sub" id="form-sub">Record a new income or expense</div>
 
-    <div class="card" style="max-width:560px;">
-      <!-- Type toggle -->
-      <div class="type-toggle" id="type-toggle" style="grid-template-columns:1fr 1fr 1fr;">
-        <button class="type-toggle-btn active income" data-type="income" onclick="setEntryType('income')">💰 Income</button>
-        <button class="type-toggle-btn expense" data-type="expense" onclick="setEntryType('expense')">💸 Expense</button>
-        <button class="type-toggle-btn debt" data-type="debt" onclick="setEntryType('debt')">🤝 Debt</button>
+    <!-- Hero plus button -->
+    <div class="add-hero">
+      <div class="add-plus-ring">
+        <div class="add-plus-circle">+</div>
       </div>
+      <div class="add-hero-title">New Entry</div>
+      <div class="add-hero-sub">What would you like to record?</div>
+    </div>
 
+    <!-- Type cards: Expense · Income · Debt -->
+    <div class="type-cards">
+      <button class="type-card active expense" data-type="expense" onclick="setEntryType('expense')">
+        <div class="type-card-icon" style="background:var(--danger-bg);">💸</div>
+        <div class="type-card-label">Expense</div>
+      </button>
+      <button class="type-card income" data-type="income" onclick="setEntryType('income')">
+        <div class="type-card-icon" style="background:var(--success-bg);">💰</div>
+        <div class="type-card-label">Income</div>
+      </button>
+      <button class="type-card debt" data-type="debt" onclick="setEntryType('debt')">
+        <div class="type-card-icon" style="background:var(--debt-bg);">🤝</div>
+        <div class="type-card-label">Debt</div>
+      </button>
+    </div>
+
+    <!-- Form -->
+    <div class="card" style="max-width:560px;margin:0 auto;">
       <div class="form-grid" id="entry-form">
         <!-- Amount -->
         <div class="form-group full">
@@ -975,7 +1072,7 @@ canvas { display: block; }
           <button class="btn btn-primary" onclick="saveEntry()">Save Entry</button>
         </div>
       </div>
-    </div>
+    </div><!-- /form card -->
   </div>
 </div>
 
@@ -1223,7 +1320,7 @@ let state = {
 };
 let editingId = null;
 let editType = 'income';
-let currentEntryType = 'income';
+let currentEntryType = 'expense';
 
 // ── Defaults ──
 const DEFAULT_CATEGORIES = [
@@ -1835,7 +1932,7 @@ function deleteSubcategory(catId, subId) {
 // ── Add Entry ──
 function setEntryType(type) {
   currentEntryType = type;
-  document.querySelectorAll('#type-toggle .type-toggle-btn').forEach(b => {
+  document.querySelectorAll('.type-cards .type-card').forEach(b => {
     b.classList.toggle('active', b.dataset.type === type);
   });
   document.getElementById('income-type-group').style.display  = type === 'income'  ? '' : 'none';
@@ -1881,7 +1978,7 @@ function resetForm() {
   document.getElementById('f-debt-due').value     = '';
   document.getElementById('f-debt-repaid').value  = '0';
   document.getElementById('f-debt-dir').value     = 'lent';
-  setEntryType('income');
+  setEntryType('expense');
   populateFormSelects();
 }
 
