@@ -932,6 +932,15 @@ button svg, label svg { width:14px; height:14px; stroke-width:2; vertical-align:
 .cat-header.open .cat-chevron svg { transform:rotate(90deg); }
 .subcat-toggle-arrow svg { width:10px; height:10px; stroke-width:2.5; transition:transform 0.2s; color:var(--text2); }
 .subcat-open .subcat-toggle-arrow svg { transform:rotate(90deg); }
+.subcat-detail-header { cursor:pointer; padding:4px 0; }
+.subcat-detail-header:hover .breakdown-item-name { opacity:.85; }
+.subcat-item-arrow svg { width:9px; height:9px; stroke-width:2.5; transition:transform 0.2s; color:var(--text2); flex-shrink:0; }
+.daily-toggle-arrow svg { width:10px; height:10px; stroke-width:2.5; transition:transform 0.2s; color:var(--text2); flex-shrink:0; }
+.breakdown-item-row { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid var(--border); font-size:12px; }
+.breakdown-item-row:last-child { border-bottom:none; }
+.breakdown-item-date { color:var(--text2); white-space:nowrap; flex-shrink:0; font-family:var(--font-mono); font-size:11px; }
+.breakdown-item-name { flex:1; color:var(--text); }
+.breakdown-item-amt { font-family:var(--font-mono); font-weight:600; color:var(--danger); white-space:nowrap; flex-shrink:0; }
 .toast-icon svg { width:14px; height:14px; stroke-width:2.5; }
 .type-toggle-btn svg { width:14px; height:14px; stroke-width:2; vertical-align:-2px; margin-right:3px; }
 .settings-it-icon svg { width:16px; height:16px; stroke-width:2; color:var(--accent); }
@@ -1230,6 +1239,30 @@ button svg, label svg { width:14px; height:14px; stroke-width:2; vertical-align:
       <div class="text-xs text-muted" style="margin-bottom:16px;">Expense by week · stacked by category</div>
       <div id="weekly-wrap"></div>
     </div>
+
+    <!-- Category Budget Tracker -->
+    <div class="card" style="margin-top:20px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px;">
+        <div style="font-family:var(--font-display);font-size:16px;font-weight:700;">Category Budget</div>
+        <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;height:30px;" onclick="toggleBudgetEdit()">
+          <i data-lucide="pencil"></i> Edit Budgets
+        </button>
+      </div>
+      <div class="text-xs text-muted" style="margin-bottom:16px;">Monthly budget vs actual spending</div>
+      <div id="budget-wrap"></div>
+    </div>
+
+    <!-- Day-wise analysis -->
+    <div class="card" style="margin-top:20px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px;">
+        <div style="font-family:var(--font-display);font-size:16px;font-weight:700;">Day-wise Expenses</div>
+        <select id="daily-filter" class="form-select" style="width:auto;min-width:130px;font-size:12px;padding:4px 8px;height:30px;" onchange="renderDailyFilter()">
+          <option value="">All Categories</option>
+        </select>
+      </div>
+      <div class="text-xs text-muted" style="margin-bottom:16px;">Each day with spending · click to see items</div>
+      <div id="daily-wrap"></div>
+    </div>
   </div>
 </div>
 
@@ -1400,6 +1433,17 @@ let state = {
   transactions: [],
   categories: [],    // [{id, name, subcategories:[{id,name}]}]
   incomeTypes: [],   // [{id, name}]
+  budgets: {},       // { 'CategoryName': amount }
+};
+
+const DEFAULT_BUDGETS = {
+  'Food': 6000,
+  'Savings': 2000,
+  'Rent': 3000,
+  'Gym': 1000,
+  'Transport': 1000,
+  'Haircut': 300,
+  'Recharge': 400,
 };
 let editingId = null;
 let editType = 'income';
@@ -1504,6 +1548,7 @@ function load() {
       state.transactions = data.transactions || [];
       state.categories   = data.categories   || DEFAULT_CATEGORIES;
       state.incomeTypes  = data.incomeTypes  || DEFAULT_INCOME_TYPES;
+      state.budgets      = data.budgets      || DEFAULT_BUDGETS;
     } else {
       state.categories  = DEFAULT_CATEGORIES;
       state.incomeTypes = DEFAULT_INCOME_TYPES;
@@ -1530,7 +1575,7 @@ function nav(page) {
   if (page === 'transactions') renderTransactions();
   if (page === 'analytics') renderAnalytics();
   if (page === 'settings') renderSettings();
-  if (page === 'add') { populateFormSelects(); }
+  if (page === 'add') { populateFormSelects(); setEntryType('expense'); }
 }
 document.querySelectorAll('.nav-btn').forEach(b => b.addEventListener('click', () => nav(b.dataset.page)));
 document.querySelectorAll('.bottom-nav-btn').forEach(b => b.addEventListener('click', () => {
@@ -1762,9 +1807,14 @@ function renderAnalytics() {
   expenses.forEach(t => {
     const cat = t.category || 'Other';
     const sub = t.subcategory && t.subcategory.trim() ? t.subcategory : null;
-    if (!catDetailMap[cat]) catDetailMap[cat] = { total: 0, subcats: {} };
+    if (!catDetailMap[cat]) catDetailMap[cat] = { total: 0, subcats: {}, items: [] };
     catDetailMap[cat].total += +t.amount;
-    if (sub) catDetailMap[cat].subcats[sub] = (catDetailMap[cat].subcats[sub] || 0) + +t.amount;
+    catDetailMap[cat].items.push(t);
+    if (sub) {
+      if (!catDetailMap[cat].subcats[sub]) catDetailMap[cat].subcats[sub] = { total: 0, items: [] };
+      catDetailMap[cat].subcats[sub].total += +t.amount;
+      catDetailMap[cat].subcats[sub].items.push(t);
+    }
   });
   const catDetailEntries = Object.entries(catDetailMap).sort((a,b) => b[1].total - a[1].total);
   const maxCatTotal      = catDetailEntries.length ? catDetailEntries[0][1].total : 1;
@@ -1775,35 +1825,61 @@ function renderAnalytics() {
   } else {
     catDetailWrap.innerHTML = catDetailEntries.map(([cat, data], ci) => {
       const color      = PALETTE[ci % PALETTE.length];
-      const subEntries = Object.entries(data.subcats).sort((a,b) => b[1]-a[1]);
+      const subEntries = Object.entries(data.subcats).sort((a,b) => b[1].total - a[1].total);
       const hasSubs    = subEntries.length > 0;
-      const subRows    = hasSubs ? subEntries.map(([sub, amt]) => `
-        <div class="bar-row" style="margin-bottom:6px;">
-          <div class="bar-label">
-            <span style="color:var(--text2);font-size:13px;">↳ ${esc(sub)}</span>
-            <span style="font-size:12px;">${fmt(amt)} <span style="color:var(--text2);font-size:11px;">${Math.round(amt/data.total*100)}%</span></span>
-          </div>
-          <div class="bar-track"><div class="bar-fill" style="width:${amt/data.total*100}%;background:${color};opacity:0.55;"></div></div>
+
+      const subRows = hasSubs ? subEntries.map(([sub, subData], si) => {
+        const itemRows = subData.items.sort((a,b) => (b.date||'').localeCompare(a.date||'')).map(t => `
+          <div class="breakdown-item-row">
+            <span class="breakdown-item-date">${fmtDate(t.date)}</span>
+            <span class="breakdown-item-name">${esc(t.purpose || sub)}</span>
+            <span class="breakdown-item-amt">${fmt(t.amount)}</span>
+          </div>`).join('');
+        return `
+          <div class="subcat-detail-block" style="margin-bottom:6px;">
+            <div class="subcat-detail-header" data-has-items="true">
+              <div class="bar-label">
+                <span style="display:flex;align-items:center;gap:6px;color:var(--text2);font-size:13px;">
+                  <span class="subcat-item-arrow"><i data-lucide="chevron-right"></i></span>
+                  ↳ ${esc(sub)}
+                </span>
+                <span style="font-size:12px;">${fmt(subData.total)} <span style="color:var(--text2);font-size:11px;">${Math.round(subData.total/data.total*100)}%</span></span>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:${subData.total/data.total*100}%;background:${color};opacity:0.55;"></div></div>
+            </div>
+            <div class="subcat-item-rows" style="display:none;padding-left:16px;padding-top:6px;">${itemRows}</div>
+          </div>`;
+      }).join('') : '';
+
+      // no-subcat items list (for categories without subcategory set)
+      const noSubItems = data.items.filter(t => !t.subcategory || !t.subcategory.trim());
+      const noSubRows = !hasSubs && noSubItems.length ? noSubItems.sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(t => `
+        <div class="breakdown-item-row">
+          <span class="breakdown-item-date">${fmtDate(t.date)}</span>
+          <span class="breakdown-item-name">${esc(t.purpose || cat)}</span>
+          <span class="breakdown-item-amt">${fmt(t.amount)}</span>
         </div>`).join('') : '';
+
+      const hasDrilldown = hasSubs || noSubRows.length > 0;
 
       return `
         <div class="cat-detail-block" style="margin-bottom:14px;">
-          <div class="cat-detail-header" style="cursor:${hasSubs?'pointer':'default'};" data-has-subs="${hasSubs}">
+          <div class="cat-detail-header" style="cursor:${hasDrilldown?'pointer':'default'};" data-has-subs="${hasDrilldown}">
             <div class="bar-label">
               <span style="display:flex;align-items:center;gap:8px;">
                 <span style="width:10px;height:10px;border-radius:3px;background:${color};display:inline-block;flex-shrink:0;"></span>
                 <strong>${esc(cat)}</strong>
-                ${hasSubs ? `<span class="subcat-toggle-arrow"><i data-lucide="chevron-right"></i></span>` : ''}
+                ${hasDrilldown ? `<span class="subcat-toggle-arrow"><i data-lucide="chevron-right"></i></span>` : ''}
               </span>
               <span>${fmt(data.total)} <span style="color:var(--text2);font-size:11px;">${totalExp ? Math.round(data.total/totalExp*100) : 0}%</span></span>
             </div>
             <div class="bar-track"><div class="bar-fill" style="width:${data.total/maxCatTotal*100}%;background:${color};"></div></div>
           </div>
-          ${hasSubs ? `<div class="subcat-rows" style="display:none;padding-left:18px;padding-top:8px;">${subRows}</div>` : ''}
+          ${hasDrilldown ? `<div class="subcat-rows" style="display:none;padding-left:18px;padding-top:8px;">${hasSubs ? subRows : noSubRows}</div>` : ''}
         </div>`;
     }).join('');
 
-    // Wire click toggles
+    // Wire category click toggles
     catDetailWrap.querySelectorAll('.cat-detail-header[data-has-subs="true"]').forEach(header => {
       header.addEventListener('click', () => {
         const block  = header.parentElement;
@@ -1812,8 +1888,23 @@ function renderAnalytics() {
         const isOpen = rows.style.display !== 'none';
         rows.style.display  = isOpen ? 'none' : 'block';
         if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(90deg)';
+        if (!isOpen) applyIcons(rows);
       });
     });
+
+    // Wire subcategory click toggles (3rd level)
+    catDetailWrap.querySelectorAll('.subcat-detail-header[data-has-items="true"]').forEach(header => {
+      header.addEventListener('click', () => {
+        const block  = header.parentElement;
+        const rows   = block.querySelector('.subcat-item-rows');
+        const arrow  = header.querySelector('.subcat-item-arrow');
+        const isOpen = rows.style.display !== 'none';
+        rows.style.display  = isOpen ? 'none' : 'block';
+        if (arrow) arrow.style.transform = isOpen ? 'rotate(90deg)' : '';
+      });
+    });
+
+    applyIcons(catDetailWrap);
   }
 
   // ── Weekly Analysis ──
@@ -1885,7 +1976,247 @@ function renderAnalytics() {
         ${detail ? `<div style="margin-top:6px;line-height:2;">${detail}</div>` : '<div style="margin-top:4px;font-size:12px;color:var(--text2);">No expenses</div>'}
       </div>`;
   }).join('');
+
+  // ── Day-wise Analysis ──
+  // Build full daily map (all expenses for this month)
+  const _dailyAllExpenses = expenses;
+  const _dailyCatEntries  = catDetailEntries; // for color lookup
+
+  // Populate filter dropdown with unique categories + subcategories
+  const dailyFilterEl = document.getElementById('daily-filter');
+  if (dailyFilterEl) {
+    const filterOptions = new Set();
+    expenses.forEach(t => {
+      if (t.category) filterOptions.add('cat:' + t.category);
+      if (t.subcategory && t.subcategory.trim()) filterOptions.add('sub:' + t.subcategory.trim());
+    });
+    const prevVal = dailyFilterEl.value;
+    dailyFilterEl.innerHTML = '<option value="">All Categories</option>';
+    // Group: categories first, then subcategories
+    const cats = [...filterOptions].filter(v=>v.startsWith('cat:')).map(v=>v.slice(4)).sort();
+    const subs = [...filterOptions].filter(v=>v.startsWith('sub:')).map(v=>v.slice(4)).sort();
+    if (cats.length) {
+      const og1 = document.createElement('optgroup'); og1.label = 'Categories';
+      cats.forEach(c => { const o=document.createElement('option'); o.value='cat:'+c; o.textContent=c; og1.appendChild(o); });
+      dailyFilterEl.appendChild(og1);
+    }
+    if (subs.length) {
+      const og2 = document.createElement('optgroup'); og2.label = 'Subcategories';
+      subs.forEach(s => { const o=document.createElement('option'); o.value='sub:'+s; o.textContent=s; og2.appendChild(o); });
+      dailyFilterEl.appendChild(og2);
+    }
+    // Restore previous selection if still valid
+    if (prevVal && [...dailyFilterEl.options].some(o=>o.value===prevVal)) dailyFilterEl.value = prevVal;
+  }
+
+  function renderDailyWrap() {
+    const filterVal = (document.getElementById('daily-filter')||{}).value || '';
+    const filteredExp = filterVal
+      ? _dailyAllExpenses.filter(t => {
+          if (filterVal.startsWith('cat:')) return (t.category||'') === filterVal.slice(4);
+          if (filterVal.startsWith('sub:')) return (t.subcategory||'').trim() === filterVal.slice(4);
+          return true;
+        })
+      : _dailyAllExpenses;
+
+    const dailyMap = {};
+    filteredExp.forEach(t => {
+      if (!t.date || t.date.length < 10) return;
+      if (!dailyMap[t.date]) dailyMap[t.date] = { total: 0, items: [] };
+      dailyMap[t.date].total += +t.amount;
+      dailyMap[t.date].items.push(t);
+    });
+    const dailyEntries = Object.entries(dailyMap).sort((a,b) => b[0].localeCompare(a[0]));
+    const maxDay = Math.max(1, ...dailyEntries.map(([,d]) => d.total));
+    const dailyWrap = document.getElementById('daily-wrap');
+
+    if (!dailyEntries.length) {
+      dailyWrap.innerHTML = '<div class="text-muted text-sm">No expense data' + (filterVal ? ' for this filter' : ' for this month') + '</div>';
+      return;
+    }
+
+    const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    dailyWrap.innerHTML = dailyEntries.map(([date, data]) => {
+      const dayOfWeek = DAY_NAMES[new Date(date + 'T00:00:00').getDay()];
+      const dayNum    = parseInt(date.split('-')[2], 10);
+      const monName   = monthLabel(month).split(' ')[0];
+
+      const catTotals = {};
+      data.items.forEach(t => { const c = t.category||'Other'; catTotals[c]=(catTotals[c]||0)+(+t.amount); });
+      const segments = Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([c,a]) => {
+        const ci = _dailyCatEntries.findIndex(([k])=>k===c);
+        const color = PALETTE[ci>=0 ? ci%PALETTE.length : 0];
+        return `<div title="${esc(c)}: ${fmt(a)}" style="width:${(a/data.total*100).toFixed(1)}%;background:${color};height:100%;display:inline-block;"></div>`;
+      }).join('');
+
+      const itemRows = data.items.sort((a,b)=>+b.amount - +a.amount).map(t => `
+        <div class="breakdown-item-row">
+          <span class="breakdown-item-date">${esc(t.category||'Other')}${t.subcategory?` · ${esc(t.subcategory)}`:''}</span>
+          <span class="breakdown-item-name">${esc(t.purpose||t.category||'')}</span>
+          <span class="breakdown-item-amt">${fmt(t.amount)}</span>
+        </div>`).join('');
+
+      return `
+        <div class="daily-day-block" style="margin-bottom:14px;">
+          <div class="daily-day-header">
+            <div class="bar-label" style="margin-bottom:5px;">
+              <span style="display:flex;align-items:center;gap:8px;">
+                <span style="font-weight:700;">${dayNum} ${monName}</span>
+                <span style="color:var(--text2);font-size:11px;">${dayOfWeek}</span>
+                <span class="daily-toggle-arrow"><i data-lucide="chevron-right"></i></span>
+              </span>
+              <span style="font-family:var(--font-mono);font-size:14px;">${fmt(data.total)}</span>
+            </div>
+            <div class="bar-track" style="height:12px;border-radius:4px;overflow:hidden;">${segments}</div>
+          </div>
+          <div class="daily-item-rows" style="display:none;padding-top:8px;">${itemRows}</div>
+        </div>`;
+    }).join('');
+
+    dailyWrap.querySelectorAll('.daily-day-header').forEach(header => {
+      header.style.cursor = 'pointer';
+      header.addEventListener('click', () => {
+        const block  = header.parentElement;
+        const rows   = block.querySelector('.daily-item-rows');
+        const arrow  = header.querySelector('.daily-toggle-arrow');
+        const isOpen = rows.style.display !== 'none';
+        rows.style.display = isOpen ? 'none' : 'block';
+        if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(90deg)';
+      });
+    });
+    applyIcons(dailyWrap);
+  }
+
+  // Expose for the dropdown onchange
+  window.renderDailyFilter = renderDailyWrap;
+  renderDailyWrap();
+
+  renderBudget(month);
+
   applyIcons();
+}
+
+// ── Category Budget ──
+let _budgetEditMode = false;
+
+function renderBudget(month) {
+  const wrap = document.getElementById('budget-wrap');
+  if (!wrap) return;
+  const expenses = state.transactions.filter(t => t.type === 'expense' && monthKey(t.date) === month);
+
+  // Build spent per category
+  const spent = {};
+  expenses.forEach(t => {
+    const c = t.category || 'Other';
+    spent[c] = (spent[c] || 0) + +t.amount;
+  });
+
+  // Merge: categories with a budget OR with spending
+  const budgets = state.budgets || {};
+  const BUDGET_ORDER = ['Food','Savings','Rent','Gym','Transport','Haircut','Recharge'];
+  const allCats = new Set([...BUDGET_ORDER.filter(c => budgets[c] || spent[c]), ...Object.keys(budgets), ...Object.keys(spent)]);
+  const rows = [...allCats].map(cat => ({
+    cat,
+    budget: budgets[cat] || 0,
+    spent: spent[cat] || 0,
+  })).sort((a, b) => {
+    const ai = BUDGET_ORDER.indexOf(a.cat);
+    const bi = BUDGET_ORDER.indexOf(b.cat);
+    if (ai !== -1 && bi !== -1) return ai - bi;
+    if (ai !== -1) return -1;
+    if (bi !== -1) return 1;
+    return b.budget - a.budget || b.spent - a.spent;
+  });
+
+  if (!rows.length) {
+    wrap.innerHTML = '<div class="text-muted text-sm">No categories found.</div>';
+    return;
+  }
+
+  if (_budgetEditMode) {
+    wrap.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        ${rows.map(r => `
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="flex:1;font-size:13px;font-weight:600;">${esc(r.cat)}</span>
+            <span style="font-size:11px;color:var(--text2);">₹</span>
+            <input type="number" class="form-input budget-edit-input" style="width:110px;height:32px;font-size:13px;padding:4px 8px;"
+              data-cat="${esc(r.cat)}" value="${r.budget}" min="0" placeholder="Budget" oninput="updateBudgetTotal()">
+          </div>`).join('')}
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 6px;border-top:2px solid var(--border);margin-top:6px;">
+          <span style="font-size:13px;font-weight:700;color:var(--text);">Total Budget</span>
+          <span style="font-family:var(--font-mono);font-size:15px;font-weight:700;color:var(--accent);">₹<span id="budget-total-val">${rows.reduce((s,r)=>s+r.budget,0).toLocaleString('en-IN')}</span></span>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button class="btn btn-primary" style="flex:1;" onclick="saveBudgets()">Save Budgets</button>
+          <button class="btn btn-ghost" onclick="toggleBudgetEdit()">Cancel</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  wrap.innerHTML = rows.map((r, i) => {
+    const color     = PALETTE[i % PALETTE.length];
+    const remaining = r.budget - r.spent;
+    const pct       = r.budget > 0 ? Math.min(100, (r.spent / r.budget) * 100) : 0;
+    const over      = r.budget > 0 && r.spent > r.budget;
+    const noBudget  = r.budget === 0;
+    const barColor  = over ? 'var(--danger)' : color;
+    const remainLabel = noBudget
+      ? `<span style="color:var(--text2);font-size:11px;">No budget set</span>`
+      : over
+        ? `<span style="color:var(--danger);font-weight:700;font-size:12px;">Over by ${fmt(Math.abs(remaining))}</span>`
+        : `<span style="color:var(--success);font-weight:700;font-size:12px;">${fmt(remaining)} left</span>`;
+
+    return `
+      <div style="margin-bottom:16px;">
+        <div class="bar-label" style="margin-bottom:5px;">
+          <span style="display:flex;align-items:center;gap:8px;">
+            <span style="width:10px;height:10px;border-radius:3px;background:${color};display:inline-block;flex-shrink:0;"></span>
+            <strong>${esc(r.cat)}</strong>
+          </span>
+          <span style="font-family:var(--font-mono);font-size:13px;">
+            ${fmt(r.spent)}${r.budget > 0 ? ` <span style="color:var(--text2);font-weight:400;">/ ${fmt(r.budget)}</span>` : ''}
+          </span>
+        </div>
+        ${r.budget > 0 ? `<div class="bar-track" style="margin-bottom:4px;"><div class="bar-fill" style="width:${pct.toFixed(1)}%;background:${barColor};${over?'border-radius:6px;':''}"></div></div>` : ''}
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          ${remainLabel}
+          ${r.budget > 0 ? `<span style="font-size:11px;color:var(--text2);">${pct.toFixed(0)}% used</span>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  applyIcons(wrap);
+}
+
+function updateBudgetTotal() {
+  const inputs = document.querySelectorAll('.budget-edit-input');
+  const total = [...inputs].reduce((s, inp) => s + (parseFloat(inp.value) || 0), 0);
+  const el = document.getElementById('budget-total-val');
+  if (el) el.textContent = total.toLocaleString('en-IN');
+}
+
+function toggleBudgetEdit() {
+  _budgetEditMode = !_budgetEditMode;
+  const month = (document.getElementById('an-month') || {}).value || monthKey(today());
+  renderBudget(month);
+  applyIcons(document.getElementById('budget-wrap'));
+}
+
+function saveBudgets() {
+  const inputs = document.querySelectorAll('#budget-wrap input[data-cat]');
+  inputs.forEach(inp => {
+    const cat = inp.dataset.cat;
+    const val = parseFloat(inp.value) || 0;
+    state.budgets[cat] = val;
+  });
+  _budgetEditMode = false;
+  save().then(() => {
+    const month = (document.getElementById('an-month') || {}).value || monthKey(today());
+    renderBudget(month);
+    toast('Budgets saved');
+  });
 }
 
 function drawDonut(canvasId, data, colors) {
