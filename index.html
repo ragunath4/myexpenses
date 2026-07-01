@@ -1553,7 +1553,6 @@ function load() {
       state.categories  = DEFAULT_CATEGORIES;
       state.incomeTypes = DEFAULT_INCOME_TYPES;
       state.transactions = [];
-      save();
     }
     refreshAll();
   }, () => {
@@ -1596,9 +1595,13 @@ function getMonths() {
 function populateMonthSelects() {
   const months = getMonths();
   const now = today().slice(0,7);
+  const latestWithData = state.transactions.length
+    ? (months.find(m => state.transactions.some(t => monthKey(t.date) === m)) || now)
+    : now;
   ['dash-month','tx-month','an-month'].forEach(id => {
     const sel = document.getElementById(id);
-    const cur = sel.value || now;
+    const defaultMonth = id === 'dash-month' ? latestWithData : now;
+    const cur = sel.value || defaultMonth;
     sel.innerHTML = months.map(m => `<option value="${m}" ${m===cur?'selected':''}>${monthLabel(m)}</option>`).join('');
   });
 }
