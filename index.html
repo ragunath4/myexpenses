@@ -287,6 +287,15 @@ body {
   cursor: pointer;
 }
 .month-select-sm option { background: #1C1A17; color: #F7F3EC; }
+.dash-year-badge {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #C8C3BB;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: var(--font-body);
+}
 .balance-amount {
   font-family: var(--font-display);
   font-size: 38px;
@@ -1013,7 +1022,7 @@ button svg, label svg { width:14px; height:14px; stroke-width:2; vertical-align:
     <div class="dash-hero">
       <div class="dash-hero-top">
         <span class="dash-hero-label">Net Balance</span>
-        <select class="month-select-sm" id="dash-year"></select>
+        <span class="dash-year-badge" id="dash-year-label">2026</span>
       </div>
       <div class="balance-amount zero" id="dash-balance">₹0</div>
       <div class="balance-month" id="dash-balance-sub">This month</div>
@@ -1179,7 +1188,7 @@ button svg, label svg { width:14px; height:14px; stroke-width:2; vertical-align:
         <span class="search-icon"><i data-lucide="search"></i></span>
         <input class="form-input search-input" id="tx-search" type="text" placeholder="Search by purpose, category…" oninput="renderTransactions()">
       </div>
-      <select class="month-select" id="tx-year" onchange="renderTransactions()"></select>
+
       <select class="month-select" id="tx-type" onchange="renderTransactions()">
         <option value="">All Types</option>
         <option value="income">Income</option>
@@ -1202,7 +1211,6 @@ button svg, label svg { width:14px; height:14px; stroke-width:2; vertical-align:
 
     <div class="month-bar">
       <label>Period</label>
-      <select class="month-select" id="an-year" onchange="renderAnalytics()"></select>
     </div>
 
     <div class="analytics-grid">
@@ -1583,7 +1591,7 @@ document.querySelectorAll('.bottom-nav-btn').forEach(b => b.addEventListener('cl
   b.classList.add('active');
 }));
 
-// ── Year dropdown population ──
+// ── Year helpers ──
 function getYears() {
   const years = new Set();
   state.transactions.forEach(t => { if (t.date) years.add(t.date.slice(0,4)); });
@@ -1592,16 +1600,8 @@ function getYears() {
 }
 
 function populateYearSelects() {
-  const years = getYears();
-  const nowYear = today().slice(0,4);
-  const latestWithData = state.transactions.length
-    ? (years.find(y => state.transactions.some(t => t.date && t.date.slice(0,4) === y)) || nowYear)
-    : nowYear;
-  ['dash-year','tx-year','an-year'].forEach(id => {
-    const sel = document.getElementById(id);
-    const cur = sel.value || latestWithData;
-    sel.innerHTML = years.map(y => `<option value="${y}" ${y===cur?'selected':''}>${y}</option>`).join('');
-  });
+  const yearLabel = document.getElementById('dash-year-label');
+  if (yearLabel) yearLabel.textContent = today().slice(0,4);
 }
 
 // ── Refresh all views ──
@@ -1623,7 +1623,7 @@ function refreshAll() {
 
 // ── Dashboard ──
 function renderDashboard() {
-  const year = document.getElementById('dash-year').value || today().slice(0,4);
+  const year = today().slice(0,4);
   const txs = state.transactions.filter(t => t.date && t.date.slice(0,4) === year);
 
   const income  = txs.filter(t => t.type==='income').reduce((s,t) => s + +t.amount, 0);
@@ -1658,7 +1658,7 @@ function renderDashboard() {
   document.getElementById('dash-lent').textContent     = fmt(lent);
   document.getElementById('dash-borrowed').textContent = fmt(borrowed);
 
-  const recent = [...txs].sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.createdAt||0) - (a.createdAt||0)).slice(0,8);
+  const recent = [...state.transactions].sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.createdAt||0) - (a.createdAt||0)).slice(0,8);
   const list = document.getElementById('dash-tx-list');
   if (!recent.length) {
     list.innerHTML = `<div class="empty-state"><div class="empty-icon"><i data-lucide="receipt"></i></div><p>No transactions for ${year}</p></div>`;
@@ -1670,7 +1670,6 @@ function renderDashboard() {
   });
   applyIcons();
 }
-document.getElementById('dash-year').addEventListener('change', renderDashboard);
 
 // ── Transaction HTML ──
 function txHtml(t) {
@@ -1727,7 +1726,7 @@ function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 
 // ── Transactions page ──
 function renderTransactions() {
-  const year = document.getElementById('tx-year').value || today().slice(0,4);
+  const year = today().slice(0,4);
   const typeFilter = document.getElementById('tx-type').value;
   const q = (document.getElementById('tx-search').value || '').toLowerCase();
 
@@ -1757,7 +1756,7 @@ function renderTransactions() {
 const PALETTE = ['#C9841A','#2D7A4F','#1A6AC9','#B33030','#8B5CF6','#0891B2','#D97706','#059669','#DC2626','#7C3AED'];
 
 function renderAnalytics() {
-  const year     = document.getElementById('an-year').value || today().slice(0,4);
+  const year     = today().slice(0,4);
   const txs      = state.transactions.filter(t => t.date && t.date.slice(0,4) === year);
   const expenses = txs.filter(t => t.type === 'expense');
 
@@ -2202,7 +2201,7 @@ function updateBudgetTotal() {
 
 function toggleBudgetEdit() {
   _budgetEditMode = !_budgetEditMode;
-  const month = (document.getElementById('an-year') || {}).value || today().slice(0,4);
+  const month = today().slice(0,4);
   renderBudget(month);
   applyIcons(document.getElementById('budget-wrap'));
 }
@@ -2216,7 +2215,7 @@ function saveBudgets() {
   });
   _budgetEditMode = false;
   save().then(() => {
-    const month = (document.getElementById('an-year') || {}).value || today().slice(0,4);
+    const month = today().slice(0,4);
     renderBudget(month);
     toast('Budgets saved');
   });
